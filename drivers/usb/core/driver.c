@@ -1427,7 +1427,8 @@ int usb_runtime_suspend(struct device *dev)
 	
 	int ret = 0;
 	
-
+        if (udev->bus->skip_resume)
+                return 0;
 	
 	ret = autosuspend_check(udev);
 	
