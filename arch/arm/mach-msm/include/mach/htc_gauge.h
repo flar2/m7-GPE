@@ -22,6 +22,7 @@ enum htc_gauge_event {
 	HTC_GAUGE_EVENT_BATT_REMOVED,
 	HTC_GAUGE_EVENT_OVERLOAD,
 	HTC_GAUGE_EVENT_EOC_STOP_CHG,
+	HTC_GAUGE_EVENT_PJ_FULL,
 };
 
 struct htc_gauge {

@@ -239,6 +239,9 @@ static int ocv_update_stop_active_mask = OCV_UPDATE_STOP_BIT_CABLE_IN |
 											OCV_UPDATE_STOP_BIT_ATTR_FILE |
 											OCV_UPDATE_STOP_BIT_BOOT_UP;
 static int ocv_update_stop_reason;
+static int sw_ocv_update_stop_active_mask = OCV_UPDATE_STOP_BIT_ATTR_FILE |
+											OCV_UPDATE_STOP_BIT_BOOT_UP;
+static int sw_ocv_update_stop_reason;
 static int level_dropped_after_cable_out = 5;
 static int level_dropped_after_boot_up = 5;
 static int new_boot_soc;
@@ -1785,6 +1788,17 @@ static void disable_ocv_update_with_reason(bool disable, int reason)
 			}
 		}
 	}
+	prev_ocv_update_stop_reason = sw_ocv_update_stop_reason;
+	if (sw_ocv_update_stop_active_mask & reason) {
+		if (disable)
+			sw_ocv_update_stop_reason |= reason;
+		else
+			sw_ocv_update_stop_reason &= ~reason;
+
+		if (prev_ocv_update_stop_reason ^ sw_ocv_update_stop_reason)
+			pr_info("sw_ocv_update_stop_reason:0x%x->0x%d\n",
+							prev_ocv_update_stop_reason, sw_ocv_update_stop_reason);
+	}
 	mutex_unlock(&ocv_update_lock);
 }
 
@@ -2858,7 +2872,8 @@ int pm8921_bms_get_attr_text(char *buf, int size)
 	len += scnprintf(buf + len, size - len,
 			"ocv_update_stop_active_mask: 0x%x;\n", ocv_update_stop_active_mask);
 	len += scnprintf(buf + len, size - len,
-			"ocv_update_stop_reason: 0x%x;\n", ocv_update_stop_reason);
+			"ocv_update_stop_reason(sw): 0x%x(0x%x);\n", ocv_update_stop_reason,
+								sw_ocv_update_stop_reason);
 
 	read_soc_params_raw(the_chip, &raw);
 	read_rbatt_params_raw(the_chip, &rraw);
@@ -3160,7 +3175,7 @@ static void pm8921_bms_complete(struct device *dev)
 	htc_batt_bms_timer.no_ocv_update_period_ms += sr_time_period_ms;
 
 	if (htc_batt_bms_timer.no_ocv_update_period_ms > the_chip->criteria_sw_est_ocv
-		&& !(!!ocv_update_stop_reason))
+		&& !(!!sw_ocv_update_stop_reason))
 		pm8921_bms_estimate_ocv();
 }
 

@@ -2453,7 +2453,7 @@ static uint16_t msm_mpm_bypassed_apps_irqs[] __initdata = {
 	RIVA_APPS_WLAN_SMSM_IRQ,
 	RIVA_APPS_WLAN_RX_DATA_AVAIL_IRQ,
 	RIVA_APPS_WLAN_DATA_XFER_DONE_IRQ,
-#if defined (CONFIG_MACH_M7_UL) || defined (CONFIG_MACH_M7_WLS) || defined(CONFIG_MACH_M7_WLV) || defined(CONFIG_MACH_M7_DCG) || defined(CONFIG_MACH_M7_DUG) || defined(CONFIG_MACH_DUMMY)
+#if defined (CONFIG_MACH_M7_UL) || defined (CONFIG_MACH_M7_WLS) || defined(CONFIG_MACH_M7_WLV) || defined(CONFIG_MACH_M7_DCG) || defined(CONFIG_MACH_M7_DUG) || defined(CONFIG_MACH_M7_DTU)
 	INT_KEY_HP,
 #endif
 };

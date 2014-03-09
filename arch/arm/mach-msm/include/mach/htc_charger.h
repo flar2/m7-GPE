@@ -98,7 +98,14 @@ struct htc_charger {
 	int (*set_pwrsrc_and_charger_enable)
 			(enum htc_power_source_type src,
 			 bool chg_enable, bool pwrsrc_enable);
+#ifdef CONFIG_DUTY_CYCLE_LIMIT
+	int (*set_limit_charge_enable)
+			(int chg_limit_reason,
+			 int chg_limit_timer_sub_mask,
+			 int limit_charge_timer_ma);
+#else
 	int (*set_limit_charge_enable)(bool enable);
+#endif
 	int (*is_batt_charge_enable)(void);
 	int (*toggle_charger)(void);
 	int (*is_ovp)(int *result);

@@ -889,20 +889,29 @@ static int msm_mctl_release(struct msm_cam_media_controller *p_mctl)
 	}
 
 	
-	if (p_mctl == (struct msm_cam_media_controller *)
-			v4l2_get_subdev_hostdata(p_mctl->axi_sdev)) {
-		if (p_mctl == msm_camera_get_rdi0_mctl() && msm_camera_get_pix0_mctl())
-			v4l2_set_subdev_hostdata(p_mctl->axi_sdev, msm_camera_get_pix0_mctl());
-		else if (p_mctl == msm_camera_get_pix0_mctl() && msm_camera_get_rdi0_mctl())
-			v4l2_set_subdev_hostdata(p_mctl->axi_sdev, msm_camera_get_rdi0_mctl());
+	if (p_mctl) {
+    	if (p_mctl == (struct msm_cam_media_controller *)
+    			v4l2_get_subdev_hostdata(p_mctl->axi_sdev)) {
+    		if (p_mctl == msm_camera_get_rdi0_mctl() && msm_camera_get_pix0_mctl())
+    			v4l2_set_subdev_hostdata(p_mctl->axi_sdev, msm_camera_get_pix0_mctl());
+    		else if (p_mctl == msm_camera_get_pix0_mctl() && msm_camera_get_rdi0_mctl())
+    			v4l2_set_subdev_hostdata(p_mctl->axi_sdev, msm_camera_get_rdi0_mctl());
+    	}
+    }
+    else {
+		pr_err("%s p_mctl is null\n", __func__);
+    }
+    if (p_mctl && p_mctl->isp_sdev) {
+    	if (p_mctl == (struct msm_cam_media_controller *)
+    			v4l2_get_subdev_hostdata(p_mctl->isp_sdev->sd)) {
+    		if (p_mctl == msm_camera_get_rdi0_mctl() && msm_camera_get_pix0_mctl())
+    			v4l2_set_subdev_hostdata(p_mctl->isp_sdev->sd, msm_camera_get_pix0_mctl());
+    		else if (p_mctl == msm_camera_get_pix0_mctl() && msm_camera_get_rdi0_mctl())
+    			v4l2_set_subdev_hostdata(p_mctl->isp_sdev->sd, msm_camera_get_rdi0_mctl());
+    	}
 	}
-
-	if (p_mctl == (struct msm_cam_media_controller *)
-			v4l2_get_subdev_hostdata(p_mctl->isp_sdev->sd)) {
-		if (p_mctl == msm_camera_get_rdi0_mctl() && msm_camera_get_pix0_mctl())
-			v4l2_set_subdev_hostdata(p_mctl->isp_sdev->sd, msm_camera_get_pix0_mctl());
-		else if (p_mctl == msm_camera_get_pix0_mctl() && msm_camera_get_rdi0_mctl())
-			v4l2_set_subdev_hostdata(p_mctl->isp_sdev->sd, msm_camera_get_rdi0_mctl());
+	else {
+		pr_err("%s p_mctl->isp_sdev is null\n", __func__);
 	}
 	
 
