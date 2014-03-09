@@ -1203,7 +1203,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 
 	
 //gboost
-printk("gcount=%d\n", g_count);
+//printk("gcount=%d\n", g_count);
 if (graphics_boost == 0 || g_count > 30) {
 
 	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
@@ -1308,6 +1308,8 @@ if (dbs_tuners_ins.gboost) {
 			if (policy->cur < dbs_tuners_ins.sync_freq)
 				dbs_freq_increase(policy, cur_load,
 						dbs_tuners_ins.sync_freq);
+			else
+				trace_cpufreq_interactive_already (policy->cpu, cur_load, policy->cur,policy->cur);
 			return;
 		}
 
@@ -1316,6 +1318,8 @@ if (dbs_tuners_ins.gboost) {
 			if (policy->cur < dbs_tuners_ins.optimal_freq)
 				dbs_freq_increase(policy, cur_load,
 						dbs_tuners_ins.optimal_freq);
+			else
+				trace_cpufreq_interactive_already (policy->cpu, cur_load, policy->cur,policy->cur);
 			return;
 		}
 	}

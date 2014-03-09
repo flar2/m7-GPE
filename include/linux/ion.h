@@ -98,7 +98,11 @@ enum cp_mem_usage {
 
 #define ION_IS_CACHED(__flags)	((__flags) & (1 << ION_CACHE_SHIFT))
 
+#ifdef CONFIG_ARCH_MSM8930
+#define ION_IOMMU_UNMAP_DELAYED 0
+#else
 #define ION_IOMMU_UNMAP_DELAYED 1
+#endif
 
 #ifdef __KERNEL__
 #include <linux/err.h>

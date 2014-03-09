@@ -470,10 +470,18 @@ int wfd_vidbuf_buf_init(struct vb2_buffer *vb)
 		(struct wfd_device *)video_drvdata(priv_data);
 	struct mem_info *minfo = vb2_plane_cookie(vb, 0);
 	struct mem_region mregion;
+	if (!minfo) {
+		pr_info("%s mem is null\n", __func__);
+		return -EINVAL;
+	}	
 	mregion.fd = minfo->fd;
 	mregion.offset = minfo->offset;
 	mregion.cookie = (u32)vb;
 	
+	if (!inst) {
+		pr_info("%s inst is null\n", __func__);
+		return -EINVAL;
+	}		
 	mregion.size =  inst->out_buf_size;
 
 	if (inst && !inst->vid_bufq.streaming) {
@@ -883,7 +891,7 @@ static int wfdioc_qbuf(struct file *filp, void *fh,
 	int rc = 0;
 	struct wfd_inst *inst = filp->private_data;
 	if (!inst || !b ||
-			(b->index < 0 || b->index >= inst->buf_count)) {
+			(b->index >= inst->buf_count)) {
 		WFD_MSG_ERR("Invalid input parameters to QBUF IOCTL\n");
 		return -EINVAL;
 	}
@@ -1305,6 +1313,10 @@ static int wfd_open(struct file *filp)
 
 	WFD_MSG_DBG("wfd_open: E\n");
 	wfd_dev = video_drvdata(filp);
+	if (!wfd_dev) {
+		pr_info("%s wfd_dev is null\n", __func__);
+		return -ENOMEM;
+	}
 
 	mutex_lock(&wfd_dev->dev_lock);
 	if (wfd_dev->in_use) {

@@ -112,6 +112,9 @@ struct htc_battery_platform_data {
 	int charger;
 	struct mpp_config_data mpp_data;
 	int chg_limit_active_mask;
+#ifdef CONFIG_DUTY_CYCLE_LIMIT
+	int chg_limit_timer_sub_mask;
+#endif
 	int critical_low_voltage_mv;
 	int *critical_alarm_vol_ptr;
 	int critical_alarm_vol_cols;
