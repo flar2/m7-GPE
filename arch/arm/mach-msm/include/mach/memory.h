@@ -22,7 +22,7 @@
 #if defined(CONFIG_KEXEC_HARDBOOT)
 #if defined(CONFIG_MACH_APQ8064_FLO)
 #define KEXEC_HB_PAGE_ADDR		UL(0x88C00000)
-#elif defined(CONFIG_MACH_M7_UL)
+#elif defined(CONFIG_MACH_M7_UL) || defined(CONFIG_MACH_M7_WLJ)
 #define KEXEC_HB_PAGE_ADDR		UL(0x88B00000)
 #else
 #error "Adress for kexec hardboot page not defined"
