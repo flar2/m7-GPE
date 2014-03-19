@@ -151,7 +151,7 @@ static void bcm_btlock_exit(void)
 static struct rfkill *bt_rfk;
 static const char bt_name[] = "bcm4334";
 
-#if (defined (CONFIG_MACH_DUMMY) || defined(CONFIG_MACH_DUMMY))
+#if (defined (CONFIG_MACH_M7_WLS) || defined(CONFIG_MACH_M7_WLV))
 extern unsigned int system_rev;
 #endif
 
@@ -271,7 +271,7 @@ static void m7wl_GPIO_config_bt_on(void)
 				ARRAY_SIZE(m7wl_GPIO_bt_on_table));
 	mdelay(2);
 
-#if (defined (CONFIG_MACH_DUMMY) || defined(CONFIG_MACH_DUMMY))
+#if (defined (CONFIG_MACH_M7_WLS) || defined(CONFIG_MACH_M7_WLV))
 	if (system_rev < XB) {
 		printk(KERN_INFO "[BT]XA!\n");
 		
@@ -298,7 +298,7 @@ static void m7wl_GPIO_config_bt_on(void)
 
 static void m7wl_GPIO_config_bt_off(void)
 {
-#if (defined (CONFIG_MACH_DUMMY) || defined(CONFIG_MACH_DUMMY))
+#if (defined (CONFIG_MACH_M7_WLS) || defined(CONFIG_MACH_M7_WLV))
 	if (system_rev < XB) {
 		
 		htc_BCM4335_wl_reg_ctl(BCM4335_WL_REG_OFF, ID_BT);

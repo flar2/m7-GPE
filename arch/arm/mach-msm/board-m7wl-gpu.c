@@ -115,13 +115,13 @@ static struct msm_bus_vectors grp3d_max_vectors[] = {
 		.src = MSM_BUS_MASTER_GRAPHICS_3D,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(4660),
+		.ib = KGSL_CONVERT_TO_MBPS(4800),
 	},
 	{
 		.src = MSM_BUS_MASTER_GRAPHICS_3D_PORT1,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(4660),
+		.ib = KGSL_CONVERT_TO_MBPS(4800),
 	},
 };
 
@@ -247,21 +247,20 @@ struct platform_device device_kgsl_3d0 = {
 /*gpuoc*/
 static int __init read_max_gpu(char *gpu_oc)
 {
-        if (strcmp(gpu_oc, "1") == 0) {
-                max_gpu = 1;
-        } else {
-                max_gpu = 0;
-        }        
-        return 0;
+	if (strcmp(gpu_oc, "1") == 0) {
+		max_gpu = 1;
+	} else {
+		max_gpu = 0;
+	}	
+	return 0;
 }
 
-__setup("gpu_oc=", read_max_gpu);
+__setup("ocG=", read_max_gpu);
 /*end gpuoc*/
 
 void __init m7wl_init_gpu(void)
 {
 	unsigned int version = socinfo_get_version();
-
 	if (max_gpu == 0)
 		kgsl_3d0_pdata.pwrlevel[0].gpu_freq = 400000000;
 
