@@ -888,7 +888,9 @@ static int voice_config_cvs_vocoder(struct voice_data *v)
 	}
 	
 	switch (common.mvs_info.media_type) {
-	case VSS_MEDIA_ID_EVRC_MODEM: {
+	case VSS_MEDIA_ID_EVRC_MODEM:
+	case VSS_MEDIA_ID_4GV_NB_MODEM:
+	case VSS_MEDIA_ID_4GV_WB_MODEM: {
 		struct cvs_set_cdma_enc_minmax_rate_cmd cvs_set_cdma_rate;
 
 		pr_debug("Setting EVRC min-max rate\n");
@@ -3174,8 +3176,9 @@ int voc_enable_cvp(uint16_t session_id)
 		if (common.ec_ref_ext == true) {
 			ret = voice_send_set_device_cmd_v2(v);
 			if (ret < 0) {
-				pr_err("%s:  set device V2 failed " \
-					"rc =%x\n", __func__, ret);
+				pr_err("%s: set device V2 failed\n"
+				       "rc =%x\n", __func__, ret);
+				goto fail;
 			}
 		} else {
 			ret = voice_send_set_device_cmd(v);

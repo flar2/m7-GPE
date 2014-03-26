@@ -534,6 +534,12 @@ static long inet_wait_for_connect(struct sock *sk, long timeo)
 		release_sock(sk);
 		timeo = schedule_timeout(timeo);
 		lock_sock(sk);
+#ifdef CONFIG_HTC_NETWORK_MODIFY
+		if (!sk->sk_wq) {
+			pr_info("[NET] %s: socket connection state: %d. current process: %s, pid: %d.\n", __func__, sk->sk_state, current->comm, current->pid);
+			return timeo;
+		}
+#endif
 		if (signal_pending(current) || !timeo)
 			break;
 		prepare_to_wait(sk_sleep(sk), &wait, TASK_INTERRUPTIBLE);
@@ -609,7 +615,7 @@ int inet_stream_connect(struct socket *sock, struct sockaddr *uaddr,
 			if (sk->__sk_common.skc_rcv_saddr)
 				printk(KERN_ERR "[NET]skc_rcv_saddr=0x%08X\n",sk->__sk_common.skc_rcv_saddr);
 
-			goto out;
+			goto sock_error;
 		}
 #endif
 

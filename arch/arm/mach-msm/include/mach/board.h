@@ -874,4 +874,7 @@ extern int dying_processors_read_proc(char *page, char **start, off_t off,
 			   int count, int *eof, void *data);
 
 extern int get_partition_num_by_name(char *name);
+
+static DEFINE_MUTEX(function_bind_sem);
+
 #endif

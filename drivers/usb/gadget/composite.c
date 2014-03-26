@@ -16,7 +16,7 @@
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/utsname.h>
-
+#include <mach/board.h>
 #include <linux/usb/composite.h>
 #include <asm/unaligned.h>
 static bool is_mtp_enabled;
@@ -980,8 +980,10 @@ composite_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *ctrl)
 						REQUEST_RESET_DELAYED);
 				}
 			}
-
+			spin_lock(&cdev->lock);
 			value = config_desc(cdev, w_value);
+			spin_unlock(&cdev->lock);
+
 			if (value >= 0)
 				value = min(w_length, (u16) value);
 			break;

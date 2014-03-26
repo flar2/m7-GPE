@@ -345,31 +345,8 @@ static void android_work(struct work_struct *data)
 	}
 }
 
-static void android_enable(struct android_dev *dev)
-{
-	struct usb_composite_dev *cdev = dev->cdev;
-
-	if (WARN_ON(!dev->disable_depth))
-		return;
-
-	if (--dev->disable_depth == 0) {
-		usb_add_config(cdev, &android_config_driver,
-					android_bind_config);
-		usb_gadget_connect(cdev->gadget);
-	}
-}
-
-static void android_disable(struct android_dev *dev)
-{
-	struct usb_composite_dev *cdev = dev->cdev;
-
-	if (dev->disable_depth++ == 0) {
-		usb_gadget_disconnect(cdev->gadget);
-		
-		usb_ep_dequeue(cdev->gadget->ep0, cdev->req);
-		usb_remove_config(cdev, &android_config_driver);
-	}
-}
+static void android_enable(struct android_dev *dev);
+static void android_disable(struct android_dev *dev);
 
 
 static ssize_t func_en_show(struct device *dev, struct device_attribute *attr,
@@ -492,6 +469,54 @@ static struct android_usb_function adb_function = {
 	.cleanup	= adb_function_cleanup,
 	.bind_config	= adb_function_bind_config,
 };
+
+static int restart_adbd;
+static void adb_ready_callback(void)
+{
+	struct android_dev *dev = _android_dev;
+	struct adb_data *data = adb_function.config;
+
+	if (dev)
+		mutex_lock(&dev->mutex);
+	else
+		pr_err("adb_ready_callback: data->dev is NULL");
+
+	data->opened = true;
+
+	if (dev && WARN_ON(!dev->disable_depth))
+		return;
+	
+	
+	if (dev && (--dev->disable_depth == 0) && restart_adbd)
+		android_enable(dev);
+
+	if (dev)
+		mutex_unlock(&dev->mutex);
+	restart_adbd = 0;
+}
+
+static void adb_closed_callback(void)
+{
+	struct android_dev *dev = _android_dev;
+	struct adb_data *data = adb_function.config;
+
+	if (!dev)
+		pr_err("adb_closed_callback: data->dev is NULL");
+
+	if (dev)
+		mutex_lock(&dev->mutex);
+
+	data->opened = false;
+
+	
+	
+	if (dev && (dev->disable_depth++ == 0) && restart_adbd)
+		android_disable(dev);
+
+	if (dev)
+		mutex_unlock(&dev->mutex);
+}
+
 
 
 static int rmnet_smd_function_bind_config(struct android_usb_function *f,
@@ -2241,6 +2266,23 @@ static ssize_t remote_wakeup_store(struct device *pdev,
 	return size;
 }
 
+static ssize_t restart_adbd_store(struct device *pdev,
+		struct device_attribute *attr, const char *buff, size_t size)
+{
+	int enable = 0;
+
+	sscanf(buff, "%d", &enable);
+
+	pr_debug("restart_adbd = %d\n", enable);
+
+	if (enable)
+		restart_adbd = 1;
+	else
+		restart_adbd = 0;
+
+	return size;
+}
+
 static ssize_t
 functions_show(struct device *pdev, struct device_attribute *attr, char *buf)
 {
@@ -2398,6 +2440,19 @@ out:
 	return snprintf(buf, PAGE_SIZE, "%s\n", state);
 }
 
+static ssize_t bugreport_debug_store(struct device *pdev,
+		struct device_attribute *attr, const char *buff, size_t size)
+{
+	int enable = 0;
+	sscanf(buff, "%d", &enable);
+	pr_info("bugreport_debug = %d\n", enable);
+	if (enable)
+		bugreport_debug = 1;
+	else
+		bugreport_debug = 0;
+	return size;
+}
+
 #define DESCRIPTOR_ATTR(field, format_string)				\
 static ssize_t								\
 field ## _show(struct device *dev, struct device_attribute *attr,	\
@@ -2442,21 +2497,48 @@ static DEVICE_ATTR(field, S_IRUGO | S_IWUSR, field ## _show, field ## _store);
 
 static DEVICE_ATTR(functions, S_IRUGO | S_IWUSR, functions_show,
 						 functions_store);
+static DEVICE_ATTR(restart_adbd, 0664, NULL, restart_adbd_store);
 static DEVICE_ATTR(pm_qos, S_IRUGO | S_IWUSR,
 		pm_qos_show, pm_qos_store);
 static DEVICE_ATTR(state, S_IRUGO, state_show, NULL);
 static DEVICE_ATTR(remote_wakeup, S_IRUGO | S_IWUSR,
 		remote_wakeup_show, remote_wakeup_store);
+static DEVICE_ATTR(bugreport_debug, 0664, NULL, bugreport_debug_store);
 
 static struct device_attribute *android_usb_attributes[] = {
 	&dev_attr_functions,
+	&dev_attr_restart_adbd,
 	&dev_attr_pm_qos,
 	&dev_attr_state,
 	&dev_attr_remote_wakeup,
+	&dev_attr_bugreport_debug,
 	NULL
 };
 
 #include "htc_attr.c"
+
+static void android_enable(struct android_dev *dev)
+{
+	struct usb_composite_dev *cdev = dev->cdev;
+
+	mutex_lock(&function_bind_sem);
+	usb_add_config(cdev, &android_config_driver,
+			android_bind_config);
+	usb_gadget_connect(cdev->gadget);
+	mutex_unlock(&function_bind_sem);
+}
+
+static void android_disable(struct android_dev *dev)
+{
+	struct usb_composite_dev *cdev = dev->cdev;
+
+	mutex_lock(&function_bind_sem);
+	usb_gadget_disconnect(cdev->gadget);
+	
+	usb_ep_dequeue(cdev->gadget->ep0, cdev->req);
+	usb_remove_config(cdev, &android_config_driver);
+	mutex_unlock(&function_bind_sem);
+}
 
 
 static int android_bind_config(struct usb_configuration *c)

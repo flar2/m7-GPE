@@ -64,6 +64,8 @@ EXPORT_SYMBOL(set_htc_monitor_resume_state_fp);
 static const struct usb_device_id usb1_1[] = {
 	{ USB_DEVICE(0x5c6, 0x9048),
 	.driver_info = 0 },
+	{ USB_DEVICE(0x5c6, 0x908A),
+	.driver_info = 0 },
 	{}
 };
 
@@ -907,6 +909,10 @@ static int ehci_hsic_int_latency(struct usb_hcd *hcd, int latency)
 	if (latency < 0 || latency > 6)
 		return -EINVAL;
 
+#if defined(CONFIG_MACH_M7_WLV)
+	if (latency == 6)
+		latency = 5;
+#endif
 
 	f01 = 1;
 	spin_lock_irqsave(&ehci->lock, flags);
@@ -2200,6 +2206,10 @@ static int __devinit ehci_hsic_msm_probe(struct platform_device *pdev)
 
 	mehci->ehci.max_log2_irq_thresh = 6;
 
+#if defined(CONFIG_MACH_M7_WLV)
+	mehci->ehci.max_log2_irq_thresh	= 5;
+#endif
+
 	INIT_WORK(&hcd->ssr_work,do_restart);
 
 	res = platform_get_resource_byname(pdev,
@@ -2436,7 +2446,6 @@ static int __devexit ehci_hsic_msm_remove(struct platform_device *pdev)
 #ifdef CONFIG_PM_SLEEP
 static int msm_hsic_pm_suspend(struct device *dev)
 {
-	int ret;
 	struct usb_hcd *hcd = dev_get_drvdata(dev);
 	struct msm_hsic_hcd *mehci = hcd_to_hsic(hcd);
 
@@ -2444,15 +2453,16 @@ static int msm_hsic_pm_suspend(struct device *dev)
 
 	dbg_log_event(NULL, "PM Suspend", 0);
 
+	if (!atomic_read(&mehci->in_lpm)) {
+		dev_info(dev, "abort suspend\n");
+		dbg_log_event(NULL, "PM Suspend abort", 0);
+		return -EBUSY;
+	}
+
 	if (device_may_wakeup(dev))
 		enable_irq_wake(hcd->irq);
 
-	ret = msm_hsic_suspend(mehci);
-
-	if (ret && device_may_wakeup(dev))
-		disable_irq_wake(hcd->irq);
-
-	return ret;
+	return 0;
 }
 
 static int msm_hsic_pm_resume(struct device *dev)

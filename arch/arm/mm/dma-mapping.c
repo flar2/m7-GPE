@@ -32,6 +32,8 @@
 #include <asm/system_info.h>
 #include <asm/dma-contiguous.h>
 
+#include <htc_debug/stability/htc_report_meminfo.h>
+
 #include "mm.h"
 
 static u64 get_coherent_dma_mask(struct device *dev)
@@ -92,6 +94,7 @@ static void __dma_free_buffer(struct page *page, size_t size)
 		__free_page(page);
 		page++;
 	}
+	sub_meminfo_total_pages(NR_DMA_PAGES, size >> PAGE_SHIFT);
 }
 
 #ifdef CONFIG_MMU
@@ -542,8 +545,10 @@ static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
 	else
 		addr = __alloc_from_contiguous(dev, size, prot, &page);
 
-	if (addr)
+	if (addr) {
 		*handle = pfn_to_dma(dev, page_to_pfn(page));
+		add_meminfo_total_pages(NR_DMA_PAGES, size >> PAGE_SHIFT);
+	}
 
 	return addr;
 }

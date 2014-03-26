@@ -145,6 +145,11 @@ static int is_buf_in_queue(struct msm_cam_v4l2_device *pcam,
 	&pcam_inst->free_vq, list) {
 		buf_idx = buf->vidbuf.v4l2_buf.index;
 		mem = vb2_plane_cookie(&buf->vidbuf, 0);
+        if (!mem) {
+            pr_err("%s: mem is null\n",__func__);
+            continue;
+        }
+		
 		if (mem->buffer_type ==	VIDEOBUF2_MULTIPLE_PLANES)
 			offset = mem->offset.data_offset +
 				pcam_inst->buf_offset[buf_idx][0].data_offset;
@@ -239,6 +244,10 @@ int msm_mctl_do_pp_divert(
 	D("%s Diverting frame %x id %d to userspace ", __func__,
 		(int)div.frame.handle, div.frame.frame_id);
 	mem = vb2_plane_cookie(&vb->vidbuf, 0);
+	if (!mem) {
+		pr_info("%s mem is null\n", __func__);
+		return -EINVAL;
+	}
 	div.frame.path = mem->path;
 	div.frame.node_type = node;
 	if (mem->buffer_type == VIDEOBUF2_SINGLE_PLANE) {
@@ -295,6 +304,10 @@ static int msm_mctl_pp_get_phy_addr(
 	pp_frame->timestamp = vb->vidbuf.v4l2_buf.timestamp;
 	pp_frame->buf_idx = buf_idx;
 	mem = vb2_plane_cookie(&vb->vidbuf, 0);
+	if (!mem) {
+		pr_info("%s mem is null\n", __func__);
+		return -EINVAL;
+	}
 	pp_frame->image_type = (unsigned short)mem->path;
 	if (mem->buffer_type == VIDEOBUF2_SINGLE_PLANE) {
 		pp_frame->num_planes = 1;

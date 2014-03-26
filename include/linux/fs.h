@@ -539,6 +539,7 @@ struct posix_acl;
 
 #ifdef CONFIG_FUSE_SD
 #define AID_SDCARD_RW 1015
+#define AID_SDCARD_R  1028
 #endif
 
 struct inode {

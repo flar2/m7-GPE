@@ -2902,7 +2902,7 @@ static const struct snd_soc_dapm_route intercon[] = {
 	{"SEC_I2S_RX", NULL, "SEC_I2S_DL_HL"},
 	{"PRI_I2S_RX", NULL, "PRI_I2S_DL_HL"},
 	{"PRI_I2S_UL_HL", NULL, "PRI_I2S_TX"},
-#if defined(CONFIG_ARCH_DUMMY) || defined(CONFIG_ARCH_DUMMY) || defined(CONFIG_ARCH_DUMMY)
+#if defined(CONFIG_ARCH_APQ8064_M7DXG) || defined(CONFIG_ARCH_APQ8064_DLPDXG) || defined(CONFIG_ARCH_APQ8064_T6DXG)
 	
 	
 	
@@ -2982,6 +2982,8 @@ static const struct snd_soc_dapm_route intercon[] = {
 
 	{"SLIMBUS_3_RX_Voice Mixer", "Voice2 Stub", "VOICE2_STUB_DL"},
 	{"SLIMBUS_3_RX", NULL, "SLIMBUS_3_RX_Voice Mixer"},
+
+	{"SLIMBUS_1_RX Mixer", "VoLTE Stub", "VOLTE_STUB_DL"},
 
 	{"SLIMBUS_1_RX Port Mixer", "INTERNAL_BT_SCO_TX", "INT_BT_SCO_TX"},
 	{"SLIMBUS_1_RX Port Mixer", "AUX_PCM_UL_TX", "AUX_PCM_TX"},
